@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS public.technical_details
     external_data_source_location character varying(255) COLLATE pg_catalog."default",
     external_source_secret_key_name character varying(255) COLLATE pg_catalog."default",
     external_staging_container_name character varying(255) COLLATE pg_catalog."default",
-    gck_access_source_location_ref character varying(255) COLLATE pg_catalog."default",
+    gsk_access_source_location_ref character varying(255) COLLATE pg_catalog."default",
     guest_users_email character varying(255) COLLATE pg_catalog."default",
     target_ingestion_end_date timestamp without time zone,
     target_ingestion_start_date timestamp without time zone,
@@ -149,12 +149,12 @@ CREATE TABLE IF NOT EXISTS public.dataset_details
     dataset_origin_source character varying(255) COLLATE pg_catalog."default",
     dataset_required_for_ref character varying(255) COLLATE pg_catalog."default",
     dataset_type_ref character varying(255) COLLATE pg_catalog."default",
-    dta_contract_complete_flag smallint,
+    dta_contract_complete_flag boolean DEFAULT FALSE,
     dta_expected_completion_date timestamp without time zone,
     estimated_data_volume_ref character varying(255) COLLATE pg_catalog."default",
-    ihd_flag smallint,
+    ihd_flag boolean DEFAULT FALSE,
     information_classification_type_ref character varying(255) COLLATE pg_catalog."default",
-    meteor_space_domino_usage_flag smallint,
+    meteor_space_domino_usage_flag boolean DEFAULT FALSE,
     pii_type_ref character varying(255) COLLATE pg_catalog."default",
     retention_rules character varying(255) COLLATE pg_catalog."default",
     retention_rules_contract_date timestamp without time zone,
@@ -215,7 +215,7 @@ CREATE TABLE IF NOT EXISTS public.request_status_details
     created_date timestamp without time zone,
     modified_by character varying(255) COLLATE pg_catalog."default",
     modified_date timestamp without time zone,
-    active_flag smallint,
+    active_flag boolean DEFAULT FALSE,
     decision_by_email character varying(255) COLLATE pg_catalog."default",
     decision_by_mudid character varying(255) COLLATE pg_catalog."default",
     decision_by_name character varying(255) COLLATE pg_catalog."default",
@@ -333,4 +333,3 @@ CREATE TABLE IF NOT EXISTS public.dataset_user_usage_restriction
                            ON UPDATE NO ACTION
                            ON DELETE NO ACTION
 );
-

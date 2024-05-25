@@ -1,9 +1,15 @@
 package com.ddf.ingestion_ddf.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.GenerationType;
 import lombok.Data;
 
-import jakarta.persistence.*;
 import java.util.Date;
 
 @Data
@@ -30,7 +36,6 @@ public class RequestStatusDetails extends BaseModel{
     private Date decisionDate;
     private String decisionComments;
     private String rejectionReason;
-    private Byte activeFlag;
+    private Boolean activeFlag;
 
 }
-
