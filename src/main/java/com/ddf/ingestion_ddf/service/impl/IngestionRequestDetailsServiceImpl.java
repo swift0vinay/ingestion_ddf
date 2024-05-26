@@ -1,10 +1,8 @@
 package com.ddf.ingestion_ddf.service.impl;
 
 import com.ddf.ingestion_ddf.entity.*;
-import com.ddf.ingestion_ddf.enums.IngestionRequestStatus;
-import com.ddf.ingestion_ddf.enums.IngestionStatus;
-import com.ddf.ingestion_ddf.enums.OrderByField;
-import com.ddf.ingestion_ddf.enums.OrderDirection;
+import com.ddf.ingestion_ddf.enums.*;
+import com.ddf.ingestion_ddf.exceptions.ApiException;
 import com.ddf.ingestion_ddf.repository.*;
 import com.ddf.ingestion_ddf.request.mappers.DecisionRequestDTO;
 import com.ddf.ingestion_ddf.request.mappers.IngestionRequest;
@@ -16,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -158,7 +157,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
                     datasetUserUsageRestrictionList.add(datasetUserUsageRestriction);
                 }
             }
-            if (datasetUserUsageRestrictionList.size() > 0) {
+            if (!datasetUserUsageRestrictionList.isEmpty()) {
                 datasetDetails.setDatasetUserUsageRestriction(datasetUserUsageRestrictionList);
             }
             
@@ -314,11 +313,11 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
     public IngestionRequestDetailsDTO getIngestionRequestDetail(Long ingestionRequestId) {
         // Retrieve the ingestion request details from the repository
         Optional<IngestionRequestDetails> requestDetails = ingestionRequestDetailsRepository.findById(ingestionRequestId);
-        // Check if the request details are present
-        if (requestDetails.isPresent()) {
-            return getIngestionRequestDetailsDTO(requestDetails.get());
+        if (requestDetails.isEmpty()) {
+            // Handling case when requestId is not found.
+            throw new ApiException(HttpStatus.NOT_FOUND, ErrorCode.REQUEST_ID_NOT_FOUND);
         }
-        return null; // Return null if no request with the specified ID is found
+        return getIngestionRequestDetailsDTO(requestDetails.get());
     }
     
     /**
@@ -332,68 +331,68 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
     @Override
     public IngestionRequestDetailsDTO updateIngestionRequestStatus(Long ingestionRequestId, IngestionStatus newStatus, DecisionRequestDTO decisionRequestDTO) {
         Optional<IngestionRequestDetails> requestDetailsOptional = ingestionRequestDetailsRepository.findById(ingestionRequestId);
-        if (requestDetailsOptional.isPresent()) {
-            IngestionRequestDetails requestDetails = requestDetailsOptional.get();
-            // As logged-in user details are not available, using static emails for createdBy and modifiedBy
-            String createdBy = "testStatusCreated@gamil.com"; // Update with logged-in user email
-            String modifyBy = "testStatusModify@gamil.com";  // Update with logged-in user email
-            List<RequestStatusDetails> requestStatusDetailsList = requestDetails.getRequestStatusDetails();
-            boolean statusUpdated = false;
-            
-            // Map defining valid previous statuses for each new status
-            Map<IngestionStatus, String> validPreviousStatusOfRequest = Map.of(
-                    IngestionStatus.APPROVED, IngestionStatus.TRIAGE_PENDING_APPROVAL.toString(),
-                    IngestionStatus.REJECTED, IngestionStatus.TRIAGE_PENDING_APPROVAL.toString(),
-                    IngestionStatus.INGESTION_IN_PROGRESS, IngestionStatus.APPROVED.toString(),
-                    IngestionStatus.INGESTION_COMPLETED, IngestionStatus.INGESTION_IN_PROGRESS.toString(),
-                    IngestionStatus.INGESTION_FAILURE, IngestionStatus.INGESTION_IN_PROGRESS.toString(),
-                    IngestionStatus.TRIAGE_PENDING_APPROVAL, IngestionStatus.DRAFT.toString()
-            );
-            
-            if (requestStatusDetailsList != null && !requestStatusDetailsList.isEmpty()) {
-                // Loop through existing status details and deactivate the current active status
-                for (RequestStatusDetails requestStatus : requestStatusDetailsList) {
-                    if (requestStatus.getActiveFlag() && requestStatus.getStatus().getStatusName().equalsIgnoreCase(validPreviousStatusOfRequest.getOrDefault(newStatus, null))) {
-                        requestStatus.setActiveFlag(Boolean.FALSE);
-                        requestStatus.setModifiedBy(modifyBy);
-                        statusUpdated = true;
-                    }
-                }
-                
-                if (statusUpdated) {
-                    // Create a new status detail record for the new status
-                    RequestStatusDetails newRequestStatusDetails = new RequestStatusDetails();
-                    newRequestStatusDetails.setIngestionRequest(requestDetails);
-                    newRequestStatusDetails.setActiveFlag(Boolean.TRUE);
-                    newRequestStatusDetails.setCreatedBy(createdBy);
-                    newRequestStatusDetails.setModifiedBy(modifyBy);
-                    newRequestStatusDetails.setStatus(statusRepository.findByStatusNameIgnoreCase(newStatus.toString()));
-                    // If decision details are provided, set them in the new status detail
-                    if (decisionRequestDTO != null) {
-                        if (decisionRequestDTO.getDecisionComments() != null) {
-                            newRequestStatusDetails.setDecisionComments(decisionRequestDTO.getDecisionComments());
-                            newRequestStatusDetails.setRejectionReason(decisionRequestDTO.getRejectionReason());
-                            newRequestStatusDetails.setDecisionDate(new Date());
-                            // For decisionByName, decisionByMudid, decisionByEmail values are not stored as user login functionality is not included as Authentication or Authorization is not included
-                            // For notify_through_email value nothing is provided for Email Template Data for Email Sending so not working with this value
-                        }
-                        // Update technical details if provided
-                        if (decisionRequestDTO.getExistingDataLocationIdentified() != null && !decisionRequestDTO.getExistingDataLocationIdentified().isEmpty()) {
-                            TechnicalDetails technicalDetails = requestDetails.getTechnicalDetails();
-                            technicalDetails.setExistingDataLocationIdentified(decisionRequestDTO.getExistingDataLocationIdentified());
-                            technicalDetails.setIngestionRequest(requestDetails);
-                            technicalDetails.setModifiedBy(modifyBy);
-                            technicalDetailsRepository.save(technicalDetails);
-                        }
-                    }
-                    requestStatusDetailsList.add(newRequestStatusDetails);
-                    requestStatusRepository.saveAll(requestStatusDetailsList);
+        if (requestDetailsOptional.isEmpty()) {
+            // Handling case when requestId is not found.
+            throw new ApiException(HttpStatus.NOT_FOUND, ErrorCode.REQUEST_ID_NOT_FOUND);
+        }
+        IngestionRequestDetails requestDetails = requestDetailsOptional.get();
+        // As logged-in user details are not available, using static emails for createdBy and modifiedBy
+        String createdBy = "testStatusCreated@gamil.com"; // Update with logged-in user email
+        String modifyBy = "testStatusModify@gamil.com";  // Update with logged-in user email
+        List<RequestStatusDetails> requestStatusDetailsList = requestDetails.getRequestStatusDetails();
+        boolean statusUpdated = false;
+        
+        // Map defining valid previous statuses for each new status
+        Map<IngestionStatus, String> validPreviousStatusOfRequest = Map.of(
+                IngestionStatus.APPROVED, IngestionStatus.TRIAGE_PENDING_APPROVAL.toString(),
+                IngestionStatus.REJECTED, IngestionStatus.TRIAGE_PENDING_APPROVAL.toString(),
+                IngestionStatus.INGESTION_IN_PROGRESS, IngestionStatus.APPROVED.toString(),
+                IngestionStatus.INGESTION_COMPLETED, IngestionStatus.INGESTION_IN_PROGRESS.toString(),
+                IngestionStatus.INGESTION_FAILURE, IngestionStatus.INGESTION_IN_PROGRESS.toString(),
+                IngestionStatus.TRIAGE_PENDING_APPROVAL, IngestionStatus.DRAFT.toString()
+        );
+        
+        if (requestStatusDetailsList != null && !requestStatusDetailsList.isEmpty()) {
+            // Loop through existing status details and deactivate the current active status
+            for (RequestStatusDetails requestStatus : requestStatusDetailsList) {
+                if (requestStatus.getActiveFlag() && requestStatus.getStatus().getStatusName().equalsIgnoreCase(validPreviousStatusOfRequest.getOrDefault(newStatus, null))) {
+                    requestStatus.setActiveFlag(Boolean.FALSE);
+                    requestStatus.setModifiedBy(modifyBy);
+                    statusUpdated = true;
                 }
             }
-            return getIngestionRequestDetailsDTO(requestDetails);
+            
+            if (statusUpdated) {
+                // Create a new status detail record for the new status
+                RequestStatusDetails newRequestStatusDetails = new RequestStatusDetails();
+                newRequestStatusDetails.setIngestionRequest(requestDetails);
+                newRequestStatusDetails.setActiveFlag(Boolean.TRUE);
+                newRequestStatusDetails.setCreatedBy(createdBy);
+                newRequestStatusDetails.setModifiedBy(modifyBy);
+                newRequestStatusDetails.setStatus(statusRepository.findByStatusNameIgnoreCase(newStatus.toString()));
+                // If decision details are provided, set them in the new status detail
+                if (decisionRequestDTO != null) {
+                    if (decisionRequestDTO.getDecisionComments() != null) {
+                        newRequestStatusDetails.setDecisionComments(decisionRequestDTO.getDecisionComments());
+                        newRequestStatusDetails.setRejectionReason(decisionRequestDTO.getRejectionReason());
+                        newRequestStatusDetails.setDecisionDate(new Date());
+                        // For decisionByName, decisionByMudid, decisionByEmail values are not stored as user login functionality is not included as Authentication or Authorization is not included
+                        // For notify_through_email value nothing is provided for Email Template Data for Email Sending so not working with this value
+                    }
+                    // Update technical details if provided
+                    if (decisionRequestDTO.getExistingDataLocationIdentified() != null && !decisionRequestDTO.getExistingDataLocationIdentified().isEmpty()) {
+                        TechnicalDetails technicalDetails = requestDetails.getTechnicalDetails();
+                        technicalDetails.setExistingDataLocationIdentified(decisionRequestDTO.getExistingDataLocationIdentified());
+                        technicalDetails.setIngestionRequest(requestDetails);
+                        technicalDetails.setModifiedBy(modifyBy);
+                        technicalDetailsRepository.save(technicalDetails);
+                    }
+                }
+                requestStatusDetailsList.add(newRequestStatusDetails);
+                requestStatusRepository.saveAll(requestStatusDetailsList);
+            }
         }
-        // Return null if the ingestion request is not found
-        return null;
+        return getIngestionRequestDetailsDTO(requestDetails);
     }
     
     /**
@@ -650,5 +649,6 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
         }
         return null; // Return null if no results were found
     }
+    
     
 }
