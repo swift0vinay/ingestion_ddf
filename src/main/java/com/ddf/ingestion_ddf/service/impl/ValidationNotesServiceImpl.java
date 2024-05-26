@@ -7,9 +7,11 @@ import com.ddf.ingestion_ddf.exceptions.ApiException;
 import com.ddf.ingestion_ddf.repository.IngestionRequestDetailsRepository;
 import com.ddf.ingestion_ddf.repository.ValidationNotesRepository;
 import com.ddf.ingestion_ddf.request.mappers.ValidationNotesRequestDTO;
+import com.ddf.ingestion_ddf.response.mappers.ResponseDtoConverter;
 import com.ddf.ingestion_ddf.response.mappers.ValidationNotesDTO;
 import com.ddf.ingestion_ddf.service.ValidationNotesService;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +32,9 @@ public class ValidationNotesServiceImpl implements ValidationNotesService {
     private ValidationNotesRepository validationNotesRepository;
     
     private IngestionRequestDetailsRepository ingestionRequestDetailsRepository;
+    
+    @Autowired
+    private ResponseDtoConverter dtoConverter;
     
     /**
      * Constructs a ValidationNotesServiceImpl with the given repositories.
@@ -76,7 +81,7 @@ public class ValidationNotesServiceImpl implements ValidationNotesService {
         notes.setNotes(validationNotesRequestDTO.getNotes());
         notes.setModifiedBy(modifyBy);
         // Save the note and convert to DTO
-        return convertToDto(validationNotesRepository.save(notes));
+        return dtoConverter.toDto(validationNotesRepository.save(notes));
     }
     
     /**
@@ -98,18 +103,6 @@ public class ValidationNotesServiceImpl implements ValidationNotesService {
             throw new ApiException(HttpStatus.NOT_FOUND, ErrorCode.REQUEST_NOTE_ID_NOT_FOUND);
         }
         validationNotesRepository.deleteById(noteId);
-    }
-    
-    /**
-     * Converts a ValidationNotes entity to its DTO representation.
-     *
-     * @param validationNotes The ValidationNotes entity to convert.
-     * @return The DTO representation of the validation notes.
-     */
-    private ValidationNotesDTO convertToDto(ValidationNotes validationNotes) {
-        ValidationNotesDTO dto = new ValidationNotesDTO();
-        BeanUtils.copyProperties(validationNotes, dto);
-        return dto;
     }
     
 }

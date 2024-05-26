@@ -175,7 +175,7 @@ public class IngestionRequestDetailsDTO {
     private String existingDataLocationIdentified;
 
     /** List of validation notes. */
-    private List<ValidationNotes> notes;
+    private List<ValidationNotesDTO> notes;
 
     /** User who created the request. */
     private String createdBy;
