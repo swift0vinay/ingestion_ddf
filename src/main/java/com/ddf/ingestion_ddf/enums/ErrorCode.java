@@ -6,7 +6,8 @@ import lombok.Getter;
 public enum ErrorCode {
     
     REQUEST_ID_NOT_FOUND("error.1001"),
-    REQUEST_NOTE_ID_NOT_FOUND("error.1002");
+    REQUEST_NOTE_ID_NOT_FOUND("error.1002"),
+    INVALID_REQUEST_BODY_ARGUMENTS("error.1003");
     
     final String errorCode;
     
