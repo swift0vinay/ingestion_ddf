@@ -28,14 +28,14 @@ import java.util.Optional;
  */
 @Service
 public class ValidationNotesServiceImpl implements ValidationNotesService {
-    
+
     private ValidationNotesRepository validationNotesRepository;
-    
+
     private IngestionRequestDetailsRepository ingestionRequestDetailsRepository;
-    
+
     @Autowired
     private ResponseDtoConverter dtoConverter;
-    
+
     /**
      * Constructs a ValidationNotesServiceImpl with the given repositories.
      *
@@ -46,7 +46,7 @@ public class ValidationNotesServiceImpl implements ValidationNotesService {
         this.validationNotesRepository = validationNotesRepository;
         this.ingestionRequestDetailsRepository = ingestionRequestDetailsRepository;
     }
-    
+
     /**
      * Creates or updates a validation note for the specified ingestion request.
      *
@@ -68,7 +68,7 @@ public class ValidationNotesServiceImpl implements ValidationNotesService {
         // As logged-in user details are not available, using static emails for createdBy and modifiedBy
         String createdBy = "testStatusCreated@gamil.com";  // Update with logged-in user email
         String modifyBy = "testStatusModify@gamil.com";  // Update with logged-in user email
-        
+
         // Check if the note ID is provided and exists in the repository if exists then update operation needed
         if (noteId != null && validationNotesRepository.findById(noteId).isPresent()) {
             notes = validationNotesRepository.findById(noteId).get();
@@ -83,7 +83,7 @@ public class ValidationNotesServiceImpl implements ValidationNotesService {
         // Save the note and convert to DTO
         return dtoConverter.toDto(validationNotesRepository.save(notes));
     }
-    
+
     /**
      * Deletes the validation note with the specified ID for the given ingestion request.
      *
@@ -104,5 +104,5 @@ public class ValidationNotesServiceImpl implements ValidationNotesService {
         }
         validationNotesRepository.deleteById(noteId);
     }
-    
+
 }

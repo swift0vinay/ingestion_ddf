@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
 
 @Service
 public class ResponseDtoConverter {
-    
+
     @Autowired
     private ValidationNotesRepository validationNotesRepository;
-    
+
     /**
      * Converts a ValidationNotes entity to its DTO representation.
      *
@@ -29,7 +29,7 @@ public class ResponseDtoConverter {
         BeanUtils.copyProperties(validationNotes, dto);
         return dto;
     }
-    
+
     /**
      * Maps the active request status details to DTO.
      *
@@ -41,18 +41,18 @@ public class ResponseDtoConverter {
         if (requestStatusDetails == null || requestStatusDetails.isEmpty()) {
             return null;
         }
-        
+
         // Find the active request status from the list
         RequestStatusDetails activeRequestStatus = requestStatusDetails.stream()
                 .filter(status -> status.getActiveFlag() != null && status.getActiveFlag())
                 .findFirst()
                 .orElse(null);
-        
+
         // If no active request status found, return null
         if (activeRequestStatus == null) {
             return null;
         }
-        
+
         // Map details of the active request status to a RequestStatusDetailsDTO
         RequestStatusDetailsDTO activeRequestStatusDTO = new RequestStatusDetailsDTO();
         activeRequestStatusDTO.setRequestStatusId(activeRequestStatus.getRequestStatusId());
@@ -65,10 +65,10 @@ public class ResponseDtoConverter {
         activeRequestStatusDTO.setRejectionReason(activeRequestStatus.getRejectionReason());
         activeRequestStatusDTO.setActiveFlag(activeRequestStatus.getActiveFlag());
         activeRequestStatusDTO.setStatus(activeRequestStatus.getStatus());
-        
+
         return activeRequestStatusDTO;
     }
-    
+
     /**
      * Converts a comma-separated string to a list of strings.
      *
@@ -83,7 +83,7 @@ public class ResponseDtoConverter {
         // Split the input string at commas and return as a list
         return Arrays.asList(commaSeparatedString.split(","));
     }
-    
+
     /**
      * Converts an IngestionRequestDetails entity to its corresponding Response Data Transfer Object (DTO).
      *
@@ -96,12 +96,12 @@ public class ResponseDtoConverter {
         ingestRequestDetailsDTO.setRequesterName(ingestionRequestDetails.getRequesterName());
         ingestRequestDetailsDTO.setRequesterMudid(ingestionRequestDetails.getRequesterMudid());
         ingestRequestDetailsDTO.setRequesterEmail(ingestionRequestDetails.getRequesterEmail());
-        
+
         // Map dataset details from the entity to the DTO
         if (ingestionRequestDetails.getDatasetDetails() != null) {
             DatasetDetails datasetDetails = ingestionRequestDetails.getDatasetDetails();
             ingestRequestDetailsDTO.setDatasetName(datasetDetails.getDatasetName());
-            
+
             if (datasetDetails.getDatasetRoleDetails() != null) {
                 for (DatasetRoleDetails details : datasetDetails.getDatasetRoleDetails()) {
                     if (details.getRole().equalsIgnoreCase("Data SME")) {
@@ -122,7 +122,7 @@ public class ResponseDtoConverter {
                     }
                 }
             }
-            
+
             ingestRequestDetailsDTO.setDatasetOriginSource(datasetDetails.getDatasetOriginSource());
             ingestRequestDetailsDTO.setCurrentDataLocationRef(datasetDetails.getCurrentDataLocationRef());
             ingestRequestDetailsDTO.setMeteorSpaceDominoUsageFlag(datasetDetails.getMeteorSpaceDominoUsageFlag());
@@ -139,7 +139,7 @@ public class ResponseDtoConverter {
             ingestRequestDetailsDTO.setRetentionRulesContractDate(datasetDetails.getRetentionRulesContractDate());
             ingestRequestDetailsDTO.setInformationClassificationTypeRef(datasetDetails.getInformationClassificationTypeRef());
             ingestRequestDetailsDTO.setPiiTypeRef(datasetDetails.getPiiTypeRef());
-            
+
             if (datasetDetails.getDatasetDataCategories() != null) {
                 List<String> datasetDataCategories = new ArrayList<>();
                 for (DatasetDataCategory category : datasetDetails.getDatasetDataCategories()) {
@@ -147,7 +147,7 @@ public class ResponseDtoConverter {
                 }
                 ingestRequestDetailsDTO.setDataCategoryRefs(datasetDataCategories);
             }
-            
+
             if (datasetDetails.getDatasetStudies() != null) {
                 List<String> studyIds = new ArrayList<>();
                 for (DatasetStudy study : datasetDetails.getDatasetStudies()) {
@@ -155,7 +155,7 @@ public class ResponseDtoConverter {
                 }
                 ingestRequestDetailsDTO.setStudyIds(studyIds);
             }
-            
+
             if (datasetDetails.getDatasetUserUsageRestriction() != null) {
                 List<String> userRestrictions = new ArrayList<>();
                 List<String> usageRestrictions = new ArrayList<>();
@@ -169,7 +169,7 @@ public class ResponseDtoConverter {
                 ingestRequestDetailsDTO.setUserRestrictions(userRestrictions);
                 ingestRequestDetailsDTO.setUsageRestrictions(usageRestrictions);
             }
-            
+
             if (datasetDetails.getDatasetTherapies() != null) {
                 List<String> therapies = new ArrayList<>();
                 for (DatasetTherapy therapy : datasetDetails.getDatasetTherapies()) {
@@ -177,7 +177,7 @@ public class ResponseDtoConverter {
                 }
                 ingestRequestDetailsDTO.setTherapyAreas(therapies);
             }
-            
+
             if (datasetDetails.getDatasetTechAndAssays() != null) {
                 List<String> techAndAssayList = new ArrayList<>();
                 for (DatasetTechAndAssay techAndAssay : datasetDetails.getDatasetTechAndAssays()) {
@@ -185,7 +185,7 @@ public class ResponseDtoConverter {
                 }
                 ingestRequestDetailsDTO.setTechniqueAndAssays(techAndAssayList);
             }
-            
+
             if (datasetDetails.getDatasetIndications() != null) {
                 List<String> indicationList = new ArrayList<>();
                 for (DatasetIndication indication : datasetDetails.getDatasetIndications()) {
@@ -193,10 +193,10 @@ public class ResponseDtoConverter {
                 }
                 ingestRequestDetailsDTO.setIndications(indicationList);
             }
-            
-            
+
+
         }
-        
+
         if (ingestionRequestDetails.getTechnicalDetails() != null) {
             TechnicalDetails technicalDetails = ingestionRequestDetails.getTechnicalDetails();
             ingestRequestDetailsDTO.setDataLocationPath(technicalDetails.getDataLocationPath());
@@ -213,7 +213,7 @@ public class ResponseDtoConverter {
             ingestRequestDetailsDTO.setGskAccessSourceLocationRef(technicalDetails.getGskAccessSourceLocationRef());
             ingestRequestDetailsDTO.setExternalSourceSecretKeyName(technicalDetails.getExternalSourceSecretKeyName());
             ingestRequestDetailsDTO.setExistingDataLocationIdentified(technicalDetails.getExistingDataLocationIdentified());
-            
+
         }
         ingestRequestDetailsDTO.setRequestRationaleReason(ingestionRequestDetails.getRequestRationaleReason());
         ingestRequestDetailsDTO.setModifiedReason(ingestionRequestDetails.getModifiedReason());
@@ -228,5 +228,5 @@ public class ResponseDtoConverter {
         ingestRequestDetailsDTO.setModifiedDate(ingestionRequestDetails.getModifiedDate());
         return ingestRequestDetailsDTO;
     }
-    
+
 }

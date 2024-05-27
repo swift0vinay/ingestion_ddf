@@ -16,17 +16,17 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    
+
     @Autowired
     private MessageSource messageSource;
-    
+
     private String getMessageFromErrorCode(ErrorCode e) {
         if (e == null) {
             return null;
         }
         return messageSource.getMessage(e.getErrorCode(), null, Locale.getDefault());
     }
-    
+
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorResponse> handleApiException(ApiException e) {
         ErrorResponse.ErrorResponseBuilder builder = new ErrorResponse.ErrorResponseBuilder();
@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = builder.build();
         return new ResponseEntity<>(errorResponse, errorResponse.getStatus());
     }
-    
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         ArrayList<String> errorMessages = new ArrayList<>();
@@ -49,5 +49,5 @@ public class GlobalExceptionHandler {
         builder.message(errorMessages.toString());
         return new ResponseEntity<>(builder.build(), BAD_REQUEST);
     }
-    
+
 }

@@ -11,13 +11,13 @@ import java.time.LocalDateTime;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponse {
-    
+
     LocalDateTime timestamp;
-    
+
     String message;
-    
+
     String error;
-    
+
     HttpStatus status;
-    
+
 }

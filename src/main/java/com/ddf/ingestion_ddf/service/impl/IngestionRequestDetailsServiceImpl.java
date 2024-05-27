@@ -32,20 +32,20 @@ import java.util.*;
  */
 @Service
 public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetailsService {
-    
+
     private ValidationNotesRepository validationNotesRepository;
-    
+
     private StatusRepository statusRepository;
-    
+
     private IngestionRequestDetailsRepository ingestionRequestDetailsRepository;
-    
+
     private RequestStatusDetailsRepository requestStatusRepository;
-    
+
     private TechnicalDetailsRepository technicalDetailsRepository;
-    
+
     @Autowired
     private ResponseDtoConverter dtoConverter;
-    
+
     /**
      * Constructs a new {@code IngestionRequestDetailsServiceImpl} with the specified repositories.
      *
@@ -64,7 +64,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
         this.requestStatusRepository = requestStatusRepository;
         this.technicalDetailsRepository = technicalDetailsRepository;
     }
-    
+
     /**
      * Creates an ingestion request with the provided details.
      *
@@ -76,11 +76,11 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
     @Override
     public IngestionRequestDetailsDTO createOrUpdateIngestionRequest(Long ingestionRequestId, IngestionRequest ingestionRequest, boolean submit) {
         IngestionRequestDetails ingestionRequestDetails = new IngestionRequestDetails();
-        
+
         // As logged-in user details are not available, using static emails for createdBy and modifiedBy
         String createdBy = "test@gmail.com";  // Update with logged-in user email
         String modifiedBy = "testModifiy@gmail.com";  // Update with logged-in user email
-        
+
         // Check if ingestionRequestId is provided and exists in the repository if exists then operation is Update Operation
         if (ingestionRequestId != null && ingestionRequestId != 0 && ingestionRequestDetailsRepository.findById(ingestionRequestId).isPresent()) {
             IngestionRequestDetails details = ingestionRequestDetailsRepository.findById(ingestionRequestId).get();
@@ -91,7 +91,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
             ingestionRequestDetails.setCreatedBy(createdBy);
         }
         ingestionRequestDetails.setModifiedBy(modifiedBy);
-        
+
         ingestionRequestDetails.setRequesterName(ingestionRequest.getRequesterName());
         ingestionRequestDetails.setRequesterMudid(ingestionRequest.getRequesterMudid());
         ingestionRequestDetails.setRequesterEmail(ingestionRequest.getRequesterEmail());
@@ -99,7 +99,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
         ingestionRequestDetails.setRequestedByMudid(ingestionRequest.getRequesterMudid());
         ingestionRequestDetails.setRequestedByEmail(ingestionRequest.getRequesterEmail());
         ingestionRequestDetails.setRequestRationaleReason(ingestionRequest.getRequestRationaleReason());
-        
+
         DatasetDetails datasetDetails = new DatasetDetails();
         if (ingestionRequestDetails.getDatasetDetails() == null) {
             datasetDetails.setCreatedBy(createdBy);
@@ -111,16 +111,16 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
         datasetDetails.setMeteorSpaceDominoUsageFlag(ingestionRequest.getMeteorSpaceDominoUsageFlag());
         datasetDetails.setIhdFlag(ingestionRequest.getIhdFlag());
         datasetDetails.setEstimatedDataVolumeRef(ingestionRequest.getEstimatedDataVolumeRef());
-        
+
         datasetDetails.setAnalysisInitDt(ingestionRequest.getAnalysisInitDt());
         datasetDetails.setAnalysisEndDt(ingestionRequest.getAnalysisEndDt());
         datasetDetails.setDtaContractCompleteFlag(ingestionRequest.getDtaContractCompleteFlag());
         if (!ingestionRequest.getDtaContractCompleteFlag()) {
             datasetDetails.setDtaExpectedCompletionDate(ingestionRequest.getDtaExpectedCompletionDate());
         }
-        
+
         datasetDetails.setDatasetTypeRef(ingestionRequest.getDatasetTypeRef());
-        
+
         List<DatasetRoleDetails> datasetRoleDetails = new ArrayList<>();
         // Check the datasetRequiredForRef to determine further dataset details
         if (ingestionRequest.getDatasetRequiredForRef().equalsIgnoreCase("Exploration")) {
@@ -130,7 +130,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
             datasetDetails.setRetentionRulesContractDate(ingestionRequest.getRetentionRulesContractDate());
             datasetDetails.setInformationClassificationTypeRef(ingestionRequest.getInformationClassificationTypeRef());
             datasetDetails.setPiiTypeRef(ingestionRequest.getPiiTypeRef());
-            
+
             // Populate dataset user usage restrictions
             List<DatasetUserUsageRestriction> datasetUserUsageRestrictionList = new ArrayList<>();
             if (ingestionRequest.getUsageRestrictions() != null && !ingestionRequest.getUsageRestrictions().isEmpty()) {
@@ -146,7 +146,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
                     datasetUserUsageRestrictionList.add(datasetUserUsageRestriction);
                 }
             }
-            
+
             // Populate dataset user restrictions
             if (ingestionRequest.getUserRestrictions() != null && !ingestionRequest.getUserRestrictions().isEmpty()) {
                 for (String usage : ingestionRequest.getUserRestrictions()) {
@@ -164,7 +164,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
             if (!datasetUserUsageRestrictionList.isEmpty()) {
                 datasetDetails.setDatasetUserUsageRestriction(datasetUserUsageRestrictionList);
             }
-            
+
             // Populate dataset role details for data owner role
             DatasetRoleDetails datasetOwnerDetails = new DatasetRoleDetails();
             datasetOwnerDetails.setRole("data owner");
@@ -173,7 +173,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
             datasetOwnerDetails.setEmail(ingestionRequest.getDatasetOwnerEmail());
             datasetOwnerDetails.setDatasetId(datasetDetails);
             datasetRoleDetails.add(datasetOwnerDetails);
-            
+
             // Populate dataset role details for data steward role
             DatasetRoleDetails datasetStewardDetails = new DatasetRoleDetails();
             datasetStewardDetails.setRole("data steward");
@@ -182,7 +182,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
             datasetStewardDetails.setEmail(ingestionRequest.getDatasetStewardEmail());
             datasetStewardDetails.setDatasetId(datasetDetails);
             datasetRoleDetails.add(datasetStewardDetails);
-            
+
         } else {
             // If dataset is not for exploration or is industrialization, set therapy areas, techniques & assays, and indications
             List<DatasetTherapy> datasetTherapies = new ArrayList<>();
@@ -197,7 +197,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
                 }
                 datasetDetails.setDatasetTherapies(datasetTherapies);
             }
-            
+
             if (ingestionRequest.getTechniqueAndAssays() != null && !ingestionRequest.getTechniqueAndAssays().isEmpty()) {
                 for (String technique : ingestionRequest.getTechniqueAndAssays()) {
                     DatasetTechAndAssay datasetTechAndAssay = new DatasetTechAndAssay();
@@ -207,7 +207,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
                 }
                 datasetDetails.setDatasetTechAndAssays(datasetTechAndAssays);
             }
-            
+
             if (ingestionRequest.getIndications() != null && !ingestionRequest.getIndications().isEmpty()) {
                 for (String indication : ingestionRequest.getIndications()) {
                     DatasetIndication datasetIndication = new DatasetIndication();
@@ -217,9 +217,9 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
                 }
                 datasetDetails.setDatasetIndications(datasetIndications);
             }
-            
+
         }
-        
+
         List<DatasetStudy> datasetStudies = new ArrayList<>();
         if (ingestionRequest.getStudyIds() != null && !ingestionRequest.getStudyIds().isEmpty()) {
             for (String studyId : ingestionRequest.getStudyIds()) {
@@ -230,7 +230,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
             }
             datasetDetails.setDatasetStudies(datasetStudies);
         }
-        
+
         List<DatasetDataCategory> datasetDataCategories = new ArrayList<>();
         if (ingestionRequest.getDataCategoryRefs() != null && !ingestionRequest.getDataCategoryRefs().isEmpty()) {
             for (String dataCategory : ingestionRequest.getDataCategoryRefs()) {
@@ -241,7 +241,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
             }
             datasetDetails.setDatasetDataCategories(datasetDataCategories);
         }
-        
+
         // Populate dataset role details for data SME role
         DatasetRoleDetails datasetRoleDetail = new DatasetRoleDetails();
         datasetRoleDetail.setDatasetId(datasetDetails);
@@ -250,12 +250,12 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
         datasetRoleDetail.setEmail(ingestionRequest.getDatasetSmeEmail());
         datasetRoleDetail.setRole("data SME");
         datasetRoleDetails.add(datasetRoleDetail);
-        
+
         datasetDetails.setDatasetRoleDetails(datasetRoleDetails);
         datasetDetails.setIngestionRequest(ingestionRequestDetails);
-        
+
         ingestionRequestDetails.setDatasetDetails(datasetDetails);
-        
+
         // Set technical details properties from ingestionRequest object
         TechnicalDetails technicalDetails = new TechnicalDetails();
         if (ingestionRequestDetails.getTechnicalDetails() == null) {
@@ -284,9 +284,9 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
         technicalDetails.setGskAccessSourceLocationRef(ingestionRequest.getGskAccessSourceLocationRef());
         technicalDetails.setExternalSourceSecretKeyName(ingestionRequest.getExternalSourceSecretKeyName());
         technicalDetails.setIngestionRequest(ingestionRequestDetails);
-        
+
         ingestionRequestDetails.setTechnicalDetails(technicalDetails);
-        
+
         // Set request status details
         List<RequestStatusDetails> requestStatusDetailsList = new ArrayList<>();
         RequestStatusDetails requestStatusDetails = new RequestStatusDetails();
@@ -303,10 +303,10 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
         requestStatusDetails.setModifiedBy(modifiedBy);
         requestStatusDetailsList.add(requestStatusDetails);
         ingestionRequestDetails.setRequestStatusDetails(requestStatusDetailsList);
-        
+
         return dtoConverter.toDto(ingestionRequestDetailsRepository.save(ingestionRequestDetails));
     }
-    
+
     /**
      * Retrieves the details of an ingestion request by its ID.
      *
@@ -323,7 +323,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
         }
         return dtoConverter.toDto(requestDetails.get());
     }
-    
+
     /**
      * Updates the status of an ingestion request and optionally adds decision details.
      *
@@ -345,7 +345,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
         String modifyBy = "testStatusModify@gamil.com";  // Update with logged-in user email
         List<RequestStatusDetails> requestStatusDetailsList = requestDetails.getRequestStatusDetails();
         boolean statusUpdated = false;
-        
+
         // Map defining valid previous statuses for each new status
         Map<IngestionStatus, String> validPreviousStatusOfRequest = Map.of(
                 IngestionStatus.APPROVED, IngestionStatus.TRIAGE_PENDING_APPROVAL.toString(),
@@ -355,7 +355,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
                 IngestionStatus.INGESTION_FAILURE, IngestionStatus.INGESTION_IN_PROGRESS.toString(),
                 IngestionStatus.TRIAGE_PENDING_APPROVAL, IngestionStatus.DRAFT.toString()
         );
-        
+
         if (requestStatusDetailsList != null && !requestStatusDetailsList.isEmpty()) {
             // Loop through existing status details and deactivate the current active status
             for (RequestStatusDetails requestStatus : requestStatusDetailsList) {
@@ -365,7 +365,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
                     statusUpdated = true;
                 }
             }
-            
+
             if (statusUpdated) {
                 // Create a new status detail record for the new status
                 RequestStatusDetails newRequestStatusDetails = new RequestStatusDetails();
@@ -398,8 +398,8 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
         }
         return dtoConverter.toDto(requestDetails);
     }
-    
-    
+
+
     /**
      * Searches for ingestion requests based on specified criteria.
      *
@@ -419,7 +419,7 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
         Sort sort = orderDirection == OrderDirection.ASC ? Sort.by(orderBy.getFieldName()).ascending() : Sort.by(orderBy.getFieldName()).descending();
         // Create a pageable object for pagination
         Pageable pageable = PageRequest.of(page - 1, perPage, sort);
-        
+
         IngestionRequestSummaryDTO summary = new IngestionRequestSummaryDTO();
         Page<IngestionRequestDetails> requestDetails = null;
         Boolean activeFlag = Boolean.TRUE;
@@ -457,6 +457,6 @@ public class IngestionRequestDetailsServiceImpl implements IngestionRequestDetai
         }
         return null; // Return null if no results were found
     }
-    
-    
+
+
 }
