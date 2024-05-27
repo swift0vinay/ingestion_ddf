@@ -5,13 +5,13 @@ package com.ddf.ingestion_ddf.enums;
  * Enum representing different statuses of ingestion processes.
  */
 public enum IngestionStatus {
-    DRAFT("Draft"),
-    TRIAGE_PENDING_APPROVAL("Triage Pending Approval"),
-    APPROVED("Approved"),
-    REJECTED("Rejected"),
-    INGESTION_IN_PROGRESS("Ingestion In-Progress"),
-    INGESTION_COMPLETED("Ingestion Completed"),
-    INGESTION_FAILURE("Ingestion Failure");
+    DRAFT("draft"),
+    TRIAGE_PENDING_APPROVAL("triagePendingApproval"),
+    APPROVED("approved"),
+    REJECTED("rejected"),
+    INGESTION_IN_PROGRESS("inProgress"),
+    INGESTION_COMPLETED("completed"),
+    INGESTION_FAILURE("failure");
 
     private final String displayName;
 
